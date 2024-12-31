@@ -1,21 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Battery, Thermometer, Gauge, PlugZap, Power } from 'lucide-react';
-import { chargingUpdate } from '../utils/calculations';
 
-export const StatusBar: React.FC = () => {
-  const [isCharging, setIsCharging] = useState(false);
+interface StatusBarProps {
+  isCharging: boolean;
+  toggleCharging: () => void;
+}
 
-  const handlePlugZapClick = async () => {
-    const newChargingState = !isCharging;
-
-    try {
-      await chargingUpdate('http://localhost:3000/api/set-if-charging/1', { isCharging: newChargingState });
-      setIsCharging(newChargingState);
-    } catch (error) {
-      console.error('Failed to update charging state on the server:', error);
-    }
-  };
-
+export const StatusBar: React.FC<StatusBarProps> = ({ isCharging, toggleCharging }) => {
   return (
     <div className="w-full border-t-8 border-gray-800">
       <div className="flex justify-between items-center px-6 py-4">
@@ -43,9 +34,8 @@ export const StatusBar: React.FC = () => {
             className={`relative w-8 h-8 lg:w-10 lg:h-10 cursor-pointer transition-transform duration-300 ease-in-out ${
               isCharging ? 'scale-110' : 'hover:scale-110'
             }`}
-            onClick={handlePlugZapClick}
+            onClick={toggleCharging} // Call the toggle function from Dashboard
           >
-            {/* Glowing effect when charging */}
             {isCharging && (
               <div className="absolute inset-0 rounded-full animate-pulse bg-green-500 opacity-20 blur-xl" />
             )}

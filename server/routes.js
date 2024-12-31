@@ -32,23 +32,33 @@ router.post('/set-battery/:id', async (req, res) => {
   }
 });
 
-router.post('/set-if-charging/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { isCharging } = req.body;
+router.post('/toggle-charging/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const queryText = 'UPDATE dashboard SET is_charging=$1 WHERE id=$2 RETURNING *';
-    const { rows } = await db.query(queryText, [isCharging, id]);
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Record not found' });
+      const getStateQuery = 'SELECT is_charging FROM dashboard WHERE id=$1';
+      const { rows: stateRows } = await db.query(getStateQuery, [id]);
+  
+      if (stateRows.length === 0) {
+        return res.status(404).json({ error: 'Record not found' });
+      }
+  
+      const currentChargingState = stateRows[0].is_charging;
+      const newChargingState = !currentChargingState;
+  
+      const updateQuery = 'UPDATE dashboard SET is_charging=$1 WHERE id=$2 RETURNING *';
+      const { rows: updateRows } = await db.query(updateQuery, [newChargingState, id]);
+  
+      if (updateRows.length === 0) {
+        return res.status(404).json({ error: 'Failed to update the record' });
+      }
+  
+      console.log('🔋 Charging State Updated:', newChargingState);
+      res.json(updateRows[0]);
+    } catch (err) {
+      console.error('Error toggling charging state:', err);
+      res.status(500).json({ error: 'Server error' });
     }
-    console.log('Charging State Updated');
-    res.json(rows[0]);
-  } catch (err) {
-    console.error('Error updating charging state:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+  });
 
 module.exports = router;
