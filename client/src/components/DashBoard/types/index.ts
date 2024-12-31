@@ -1,7 +1,13 @@
-export interface gauges {
-}
+export interface GaugeProps {
+    value: number;
+    unit: string;
+    max: number;
+}  
   
-export interface indicators {
+export interface StatusIndicatorProps {
+    icon: React.ReactNode;
+    value?: string | number;
+    label?: string;
 }
   
 export interface speed {
