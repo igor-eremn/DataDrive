@@ -1,4 +1,4 @@
-export const fetchDashboardData = async () => {
+export const fetchDashboardData = async (): Promise<any[]> => {
   try {
     const response = await fetch('http://localhost:3000/api/dashboard', {
       method: 'GET',
@@ -20,7 +20,7 @@ export const fetchDashboardData = async () => {
 
 export const toggleChargingState = async (): Promise<any> => {
   try {
-    const response = await fetch(`http://localhost:3000/api/toggle-charging/1`, {
+    const response = await fetch('http://localhost:3000/api/toggle-charging/1', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,8 +31,7 @@ export const toggleChargingState = async (): Promise<any> => {
       throw new Error(`Failed to toggle charging state: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error toggling charging state:', error);
     throw error;

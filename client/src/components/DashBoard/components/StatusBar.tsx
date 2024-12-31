@@ -29,12 +29,11 @@ export const StatusBar: React.FC<StatusBarProps> = ({ isCharging, toggleCharging
           <Power className="text-gray-900 w-6 h-6 lg:w-8 lg:h-8 transition-all duration-300 ease-in-out" />
           <Power className="text-gray-900 w-6 h-6 lg:w-8 lg:h-8 transition-all duration-300 ease-in-out" />
 
-          {/* PlugZap with hover and charging effects */}
           <div
             className={`relative w-8 h-8 lg:w-10 lg:h-10 cursor-pointer transition-transform duration-300 ease-in-out ${
               isCharging ? 'scale-110' : 'hover:scale-110'
             }`}
-            onClick={toggleCharging} // Call the toggle function from Dashboard
+            onClick={toggleCharging}
           >
             {isCharging && (
               <div className="absolute inset-0 rounded-full animate-pulse bg-green-500 opacity-20 blur-xl" />

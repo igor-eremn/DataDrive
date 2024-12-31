@@ -4,7 +4,7 @@ import { Gauges } from './components/Gauges';
 import { StatusIndicator } from './components/StatusIndicator';
 import { MotorSpeedSetting } from './components/MotorSpeedSetting';
 import { StatusBar } from './components/StatusBar';
-import { fetchDashboardData, toggleChargingState } from './api/utils'; // Import utilities
+import { fetchDashboardData, toggleChargingState } from './api/utils';
 
 const Dashboard: React.FC = () => {
   const [isCharging, setIsCharging] = useState(false);
@@ -22,7 +22,34 @@ const Dashboard: React.FC = () => {
     };
 
     fetchData();
-    console.log('Dashboard data:', dashboardData);
+
+    const socket = new WebSocket('ws://localhost:3000');
+
+    socket.onmessage = (event) => {
+      try {
+        const updatedData = JSON.parse(event.data);
+        console.log('ws message received:', updatedData);
+
+        setDashboardData((prevData: any) => ({
+          ...prevData,
+          ...updatedData,
+        }));
+        if (updatedData.hasOwnProperty('is_charging')) {
+          setIsCharging(updatedData.is_charging);
+        }
+      } catch (error) {
+        console.error('Error parsing ws message:', error);
+      }
+    };
+
+    socket.onerror = (error) => {
+      //console.error('ws error:', error);
+    };
+
+    return () => {
+      socket.close();
+      console.log('ws connection closed');
+    };
   }, []);
 
   const handleToggleCharging = async () => {
