@@ -10,5 +10,7 @@ export interface StatusIndicatorProps {
     label?: string;
 }
   
-export interface speed {
+export interface MotorSpeedSettingProps {
+    currentSpeed: number;
+    maxSpeed: number;
 }
