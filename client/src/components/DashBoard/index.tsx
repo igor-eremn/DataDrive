@@ -4,6 +4,7 @@ import { TopStatusIcons } from './components/TopStatusIcons';
 import { Gauge } from './components/Gauge';
 import { StatusIndicator } from './components/StatusIndicator';
 import { MotorSpeedSetting } from './components/MotorSpeedSetting';
+import { StatusBar } from './components/StatusBar';
 
 const Dashboard: React.FC = () => {
   return (
@@ -38,6 +39,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <MotorSpeedSetting currentSpeed={0} maxSpeed={4} />
+      <StatusBar />
     </div>
   );
 };
