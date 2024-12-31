@@ -5,6 +5,7 @@ const db = require('./db');
 router.get('/dashboard', async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM dashboard');
+    console.log('Vehicle Dashboard Data Received');
     res.json(rows);
   } catch (err) {
     console.error('Error fetching dashboard data:', err);
@@ -23,6 +24,7 @@ router.post('/set-battery/:id', async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Record not found' });
     }
+    console.log('Battery Percentage Updated');
     res.json(rows[0]);
   } catch (err) {
     console.error('Error updating battery:', err);
