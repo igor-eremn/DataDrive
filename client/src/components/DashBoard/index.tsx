@@ -7,7 +7,7 @@ import { StatusBar } from './components/StatusBar';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="h-screen w-screen flex flex-col bg-gray-900">
+    <div className="min-h-screen w-screen flex flex-col bg-gray-900">
       <div className="w-full border-b border-gray-800">
         <TopStatusIcons />
       </div>
