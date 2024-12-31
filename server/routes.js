@@ -32,4 +32,23 @@ router.post('/set-battery/:id', async (req, res) => {
   }
 });
 
+router.post('/set-if-charging/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isCharging } = req.body;
+
+    const queryText = 'UPDATE dashboard SET is_charging=$1 WHERE id=$2 RETURNING *';
+    const { rows } = await db.query(queryText, [isCharging, id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Record not found' });
+    }
+    console.log('Charging State Updated');
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Error updating charging state:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
