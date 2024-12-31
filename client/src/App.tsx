@@ -3,7 +3,7 @@ import './App.css';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-950 p-4 flex items-center justify-center">
+    <div className="w-screen h-screen bg-gray-950">
       <Dashboard />
     </div>
   );

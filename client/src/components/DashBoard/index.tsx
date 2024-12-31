@@ -1,44 +1,29 @@
 import React from 'react';
-import { Battery, Thermometer, Power, Gauge as GaugeIcon } from 'lucide-react';
 import { TopStatusIcons } from './components/TopStatusIcons';
-import { Gauge } from './components/Gauge';
+import { Gauges } from './components/Gauges';
 import { StatusIndicator } from './components/StatusIndicator';
 import { MotorSpeedSetting } from './components/MotorSpeedSetting';
 import { StatusBar } from './components/StatusBar';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="w-full max-w-4xl bg-gray-900 p-6 rounded-lg">
-      <TopStatusIcons />
+    <div className="h-screen w-screen flex flex-col bg-gray-900">
+      <div className="w-full border-b border-gray-800">
+        <TopStatusIcons />
+      </div>
       
-      <div className="flex flex-wrap justify-around gap-8 mb-8">
-        <Gauge value={0} unit="kW" max={1000} />
-        <Gauge value={0} unit="RPM" max={800} />
-      </div>
+      <Gauges />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <StatusIndicator 
-          icon={<GaugeIcon className="w-6 h-6 text-gray-400" />}
-          label="N/N"
-        />
-        <StatusIndicator 
-          icon={<Battery className="w-6 h-6 text-gray-400" />}
-          value="22"
-          label="%"
-        />
-        <StatusIndicator 
-          icon={<Thermometer className="w-6 h-6 text-gray-400" />}
-          value="33"
-          label="°C"
-        />
-        <StatusIndicator 
-          icon={<Power className="w-6 h-6 text-gray-400" />}
-          value="0.0"
-          label="RPM"
-        />
-      </div>
+      <div className="flex flex-col lg:flex-row gap-8 border-t-8 border-gray-800">
+        <div className="flex-1 lg:w-1/2 border-b border-b-8 border-gray-800 lg:border-b-0">
+          <StatusIndicator />
+        </div>
 
-      <MotorSpeedSetting currentSpeed={0} maxSpeed={4} />
+        <div className="flex-1 lg:w-1/2">
+          <MotorSpeedSetting />
+        </div>
+      </div>
+      
       <StatusBar />
     </div>
   );
