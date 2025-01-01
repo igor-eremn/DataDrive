@@ -100,6 +100,35 @@ const setupRoutes = (broadcast) => {
     }
   });
 
+  router.get('/statuses/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const queryText = 'SELECT parking_brake, check_engine, motor_speed, battery_percentage FROM dashboard WHERE id = $1';
+      const { rows } = await db.query(queryText, [id]);
+  
+      if (rows.length === 0) {
+        return res.status(404).json({ error: 'Record not found' });
+      }
+  
+      const { parking_brake, check_engine, motor_speed, battery_percentage } = rows[0];
+  
+      const statuses = {
+        parkingBrake: parking_brake,
+        checkEngine: check_engine,
+        motorActive: motor_speed === 4,
+        lowBattery: parseFloat(battery_percentage) < 20,
+      };
+  
+      console.log('Statuses Received');
+  
+      res.json(statuses);
+    } catch (err) {
+      console.error('Error fetching statuses:', err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+
   return router;
 };
 

@@ -4,12 +4,13 @@ import { Gauges } from './components/Gauges';
 import { StatusIndicator } from './components/StatusIndicator';
 import { MotorSpeedSetting } from './components/MotorSpeedSetting';
 import { StatusBar } from './components/StatusBar';
-import { fetchDashboardData, toggleChargingState, updateMotorSpeed } from './api/utils';
+import { fetchDashboardData, toggleChargingState, updateMotorSpeed, fetchStatuses } from './api/utils';
 
 const Dashboard: React.FC = () => {
   const [isCharging, setIsCharging] = useState(false);
   const [motorSpeed, setMotorSpeed] = useState(0);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [statuses, setStatuses] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,7 +19,9 @@ const Dashboard: React.FC = () => {
         setDashboardData(data[0]);
         setIsCharging(data[0].is_charging);
         setMotorSpeed(data[0].motor_speed);
-        console.log('Speed:', data[0].motor_speed);
+
+        const statusData = await fetchStatuses();
+        setStatuses(statusData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
@@ -28,7 +31,7 @@ const Dashboard: React.FC = () => {
 
     const socket = new WebSocket('ws://localhost:3000');
 
-    socket.onmessage = (event) => {
+    socket.onmessage = async (event) => {
       try {
         const updatedData = JSON.parse(event.data);
         console.log('ws message received:', updatedData);
@@ -43,7 +46,10 @@ const Dashboard: React.FC = () => {
         }
 
         if (updatedData.hasOwnProperty('motor_speed')) {
-          setMotorSpeed(updatedData.motor_speed); // Update motor speed on WebSocket message
+          setMotorSpeed(updatedData.motor_speed);
+
+          const statusData = await fetchStatuses();
+          setStatuses(statusData);
         }
       } catch (error) {
         console.error('Error parsing ws message:', error);
@@ -81,7 +87,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen w-screen flex flex-col bg-gray-900">
       <div className="w-full border-b border-gray-800">
-        <TopStatusIcons />
+        {statuses && <TopStatusIcons statuses={statuses} />}
       </div>
 
       <Gauges />

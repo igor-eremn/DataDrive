@@ -59,3 +59,23 @@ export const updateMotorSpeed = async (speed: number): Promise<any> => {
     throw error;
   }
 };
+
+export const fetchStatuses = async (): Promise<any> => {
+  try {
+    const response = await fetch(`http://localhost:3000/api/statuses/1`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch statuses: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching statuses:', error);
+    throw error;
+  }
+};
