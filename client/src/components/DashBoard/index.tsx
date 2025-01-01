@@ -137,6 +137,7 @@ const Dashboard: React.FC = () => {
             <MotorSpeedSetting
               speed={motorSpeed}
               onSpeedChange={handleSpeedChange}
+              disabled={isCharging} 
             />
           )}
         </div>
