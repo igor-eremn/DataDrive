@@ -8,6 +8,7 @@ import { fetchDashboardData, toggleChargingState, updateMotorSpeed, fetchStatuse
 
 const Dashboard: React.FC = () => {
   const [isCharging, setIsCharging] = useState(false);
+  const [hasPower, setHasPower] = useState(false);
   const [motorSpeed, setMotorSpeed] = useState(0);
   const [motorRpm, setMotorRpm] = useState(0);
   const [powerConsumption, setPowerConsumption] = useState(0);
@@ -22,6 +23,8 @@ const Dashboard: React.FC = () => {
 
         setDashboardData(row);
         setIsCharging(row.is_charging);
+        setHasPower(row.battery_percentage > 0);
+        console.log('row battery:', row.battery_percentage);
         setMotorSpeed(row.motor_speed);
         setMotorRpm(parseInt(row.motor_rpm, 10));
         setPowerConsumption(parseInt(row.power_consumption, 10));
@@ -48,6 +51,7 @@ const Dashboard: React.FC = () => {
 
         if (updatedData.hasOwnProperty('is_charging')) {
           setIsCharging(updatedData.is_charging);
+          setHasPower(updatedData.battery_percentage > 0);
         }
 
         if (updatedData.hasOwnProperty('motor_speed')) {
@@ -126,7 +130,8 @@ const Dashboard: React.FC = () => {
             <MotorSpeedSetting
               speed={motorSpeed}
               onSpeedChange={handleSpeedChange}
-              disabled={isCharging}
+              disabledCharging={isCharging}
+              disabledPower={!hasPower}
             />
           )}
         </div>

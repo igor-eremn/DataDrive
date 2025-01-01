@@ -3,13 +3,15 @@ import React, { useRef, useState, useEffect } from "react";
 interface MotorSpeedSettingProps {
   speed: number;
   onSpeedChange: (speed: number) => void;
-  disabled?: boolean;
+  disabledCharging?: boolean;
+  disabledPower?: boolean;
 }
 
 export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
   speed,
   onSpeedChange,
-  disabled = false,
+  disabledCharging = false,
+  disabledPower = false,
 }) => {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -20,7 +22,7 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
   }, [speed]);
 
   const handleDrag = (event: React.MouseEvent | React.TouchEvent) => {
-    if (disabled || !trackRef.current) return;
+    if (disabledCharging || disabledPower || !trackRef.current) return;
 
     const track = trackRef.current.getBoundingClientRect();
     const clientX =
@@ -39,7 +41,7 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
   };
 
   const handleMouseDown = () => {
-    if (!disabled) {
+    if (!disabledCharging && !disabledPower) {
       setDragging(true);
     }
   };
@@ -49,7 +51,7 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
   };
 
   const handleMouseMove = (event: React.MouseEvent | React.TouchEvent) => {
-    if (dragging && !disabled) {
+    if (dragging && !disabledCharging && !disabledPower) {
       handleDrag(event);
     }
   };
@@ -70,7 +72,7 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
         <div
           ref={trackRef}
           className={`relative w-full h-2 bg-gray-700 rounded-full ${
-            disabled ? 'opacity-50 cursor-not-allowed' : ''
+            disabledCharging || disabledPower ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           <div
