@@ -41,31 +41,37 @@ const setupRoutes = (broadcast) => {
   router.post('/toggle-charging/:id', async (req, res) => {
     try {
       const { id } = req.params;
-
-      const getStateQuery = 'SELECT is_charging FROM dashboard WHERE id=$1';
+  
+      const getStateQuery = 'SELECT is_charging, motor_speed FROM dashboard WHERE id=$1';
       const { rows: stateRows } = await db.query(getStateQuery, [id]);
       if (stateRows.length === 0) {
         return res.status(404).json({ error: 'Record not found' });
       }
-
-      const currentChargingState = stateRows[0].is_charging;
-      const newChargingState = !currentChargingState;
+  
+      const { is_charging, motor_speed } = stateRows[0];
+      const newChargingState = !is_charging;
+  
+      if (newChargingState && motor_speed !== 0) {
+        return res
+          .status(400)
+          .json({ error: 'Cannot start charging while motor speed is not 0.' });
+      }
 
       const updateQuery = 'UPDATE dashboard SET is_charging=$1 WHERE id=$2 RETURNING *';
       const { rows: updateRows } = await db.query(updateQuery, [newChargingState, id]);
       if (updateRows.length === 0) {
         return res.status(404).json({ error: 'Failed to update the record' });
       }
-
+  
       console.log('🔋 Charging State Updated:', newChargingState);
       broadcast(updateRows[0]);
-
+  
       if (newChargingState) {
         startCharging(id, broadcast);
       } else {
         stopCharging(id);
       }
-
+  
       res.json(updateRows[0]);
     } catch (err) {
       console.error('Error toggling charging state:', err);
