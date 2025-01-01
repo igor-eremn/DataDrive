@@ -14,6 +14,8 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
       setCheckKW(false);
     } else if(powerConsumption < 0){
       setCheckKW(true);
+    } else if(powerConsumption > 0){
+      setCheckKW(true);
     }
   }, [powerConsumption]);
 
