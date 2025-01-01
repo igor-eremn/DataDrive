@@ -42,7 +42,11 @@ const setupRoutes = (broadcast) => {
     try {
       const { id } = req.params;
   
-      const getStateQuery = 'SELECT is_charging, motor_speed FROM dashboard WHERE id=$1';
+      const getStateQuery = `
+        SELECT is_charging, motor_speed
+        FROM dashboard
+        WHERE id = $1
+      `;
       const { rows: stateRows } = await db.query(getStateQuery, [id]);
       if (stateRows.length === 0) {
         return res.status(404).json({ error: 'Record not found' });
@@ -56,8 +60,13 @@ const setupRoutes = (broadcast) => {
           .status(400)
           .json({ error: 'Cannot start charging while motor speed is not 0.' });
       }
-
-      const updateQuery = 'UPDATE dashboard SET is_charging=$1 WHERE id=$2 RETURNING *';
+  
+      const updateQuery = `
+        UPDATE dashboard
+        SET is_charging = $1
+        WHERE id = $2
+        RETURNING *
+      `;
       const { rows: updateRows } = await db.query(updateQuery, [newChargingState, id]);
       if (updateRows.length === 0) {
         return res.status(404).json({ error: 'Failed to update the record' });
@@ -70,6 +79,16 @@ const setupRoutes = (broadcast) => {
         startCharging(id, broadcast);
       } else {
         stopCharging(id);
+  
+        const resetConsumptionQuery = `
+          UPDATE dashboard
+          SET power_consumption = 0.00
+          WHERE id = $1
+          RETURNING *
+        `;
+        const { rows: resetRows } = await db.query(resetConsumptionQuery, [id]);
+        
+        broadcast(resetRows[0]);
       }
   
       res.json(updateRows[0]);

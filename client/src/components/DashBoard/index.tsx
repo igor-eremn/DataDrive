@@ -9,6 +9,9 @@ import { fetchDashboardData, toggleChargingState, updateMotorSpeed, fetchStatuse
 const Dashboard: React.FC = () => {
   const [isCharging, setIsCharging] = useState(false);
   const [motorSpeed, setMotorSpeed] = useState(0);
+  const [motorRpm, setMotorRpm] = useState(0);
+  const [powerConsumption, setPowerConsumption] = useState(0);
+
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [statuses, setStatuses] = useState<any>(null);
 
@@ -16,12 +19,18 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         const data = await fetchDashboardData();
-        setDashboardData(data[0]);
-        setIsCharging(data[0].is_charging);
-        setMotorSpeed(data[0].motor_speed);
+        const row = data[0];
+
+        setDashboardData(row);
+        setIsCharging(row.is_charging);
+        setMotorSpeed(row.motor_speed);
+
+        setMotorRpm(parseInt(row.motor_rpm, 10));
+        setPowerConsumption(parseInt(row.power_consumption, 10));
 
         const statusData = await fetchStatuses();
         setStatuses(statusData);
+
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
@@ -30,7 +39,6 @@ const Dashboard: React.FC = () => {
     fetchData();
 
     const socket = new WebSocket('ws://localhost:3000');
-
     socket.onmessage = async (event) => {
       try {
         const updatedData = JSON.parse(event.data);
@@ -47,10 +55,19 @@ const Dashboard: React.FC = () => {
 
         if (updatedData.hasOwnProperty('motor_speed')) {
           setMotorSpeed(updatedData.motor_speed);
-
-          const statusData = await fetchStatuses();
-          setStatuses(statusData);
         }
+
+        if (updatedData.hasOwnProperty('motor_rpm')) {
+          setMotorRpm(parseInt(updatedData.motor_rpm, 10));
+        }
+
+        if (updatedData.hasOwnProperty('power_consumption')) {
+          setPowerConsumption(parseInt(updatedData.power_consumption, 10));
+        }
+
+        const statusData = await fetchStatuses();
+        setStatuses(statusData);
+
       } catch (error) {
         console.error('Error parsing ws message:', error);
       }
@@ -79,6 +96,14 @@ const Dashboard: React.FC = () => {
     try {
       const updatedData = await updateMotorSpeed(speed);
       setMotorSpeed(updatedData.motor_speed);
+
+      if (updatedData.motor_rpm !== undefined) {
+        setMotorRpm(parseInt(updatedData.motor_rpm, 10));
+      }
+      if (updatedData.power_consumption !== undefined) {
+        setPowerConsumption(parseInt(updatedData.power_consumption, 10));
+      }
+
     } catch (error) {
       console.error('Error updating motor speed:', error);
     }
@@ -90,7 +115,7 @@ const Dashboard: React.FC = () => {
         {statuses && <TopStatusIcons statuses={statuses} />}
       </div>
 
-      <Gauges />
+      <Gauges motorRpm={motorRpm} powerConsumption={powerConsumption} />
 
       <div className="flex flex-col lg:flex-row gap-8 border-t-8 border-gray-800">
         <div className="flex-1 lg:w-1/2 border-b border-b-8 border-gray-800 lg:border-b-0">

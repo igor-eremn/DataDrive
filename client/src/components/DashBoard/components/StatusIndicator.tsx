@@ -31,9 +31,9 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ data }) => {
     { icon: <GaugeIcon />, value: data.gearRatio },
     {
       icon: data.is_charging ? chargingIcon : <Battery />,
-      value: `${data.batteryPercentage}%`,
+      value: `${parseInt(data.batteryPercentage, 10)}%`,
     },
-    { icon: <Thermometer />, value: `${data.batteryTemperature}ºC` },
+    { icon: <Thermometer />, value: `${parseInt(data.batteryTemperature, 10)}ºC` },
     { icon: <Power />, value: `${data.motorRpm} RPM` },
   ];
 
