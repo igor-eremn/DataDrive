@@ -4,6 +4,7 @@ const db = require('./db');
 
 const { startCharging, stopCharging } = require('./chargingService');
 const { startSpeedService, stopSpeedService } = require('./speedService');
+const { startTemperatureService, stopTemperatureService } = require('./temperatureService');
 
 const setupRoutes = (broadcast) => {
   router.get('/dashboard', async (req, res) => {
@@ -105,7 +106,9 @@ const setupRoutes = (broadcast) => {
       const { speed } = req.body;
   
       if (speed < 0 || speed > 4) {
-        return res.status(400).json({ error: 'Invalid speed. Must be between 0 and 4.' });
+        return res
+          .status(400)
+          .json({ error: 'Invalid speed. Must be between 0 and 4.' });
       }
   
       const baseRpm = speed * 200;
@@ -131,8 +134,10 @@ const setupRoutes = (broadcast) => {
   
       if (speed === 0) {
         stopSpeedService(id);
+        startTemperatureService(id, broadcast);
       } else {
         startSpeedService(id, broadcast);
+        startTemperatureService(id, broadcast);
       }
   
       res.json(rows[0]);

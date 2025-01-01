@@ -123,6 +123,16 @@ function stopSpeedService(id) {
     clearInterval(speedJobs[id]);
     delete speedJobs[id];
   }
+
+  db.query(`
+    UPDATE dashboard
+    SET power_consumption = 0.00
+    WHERE id = $1
+  `, [id]).then(() => {
+    console.log(`Power consumption reset to 0 for ID ${id}`);
+  }).catch((err) => {
+    console.error(`Error resetting power consumption for ID ${id}:`, err);
+  });
 }
 
 module.exports = {
