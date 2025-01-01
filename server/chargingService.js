@@ -94,11 +94,31 @@ async function startCharging(id, broadcast) {
   chargingJobs[id] = intervalId;
 }
 
-function stopCharging(id) {
+function stopCharging(id, broadcast) {
   if (chargingJobs[id]) {
     clearInterval(chargingJobs[id]);
     delete chargingJobs[id];
   }
+
+  (async () => {
+    try {
+      const resetConsumptionQuery = `
+        UPDATE dashboard
+        SET power_consumption = 0.00
+        WHERE id = $1
+        RETURNING *
+      `;
+      const { rows } = await db.query(resetConsumptionQuery, [id]);
+      if (rows.length > 0) {
+        console.log('🔌 Power Consumption Reset to 0 after stopping charging.');
+        if (broadcast) {
+          broadcast(rows[0]);
+        }
+      }
+    } catch (err) {
+      console.error('Error resetting power consumption after stopping charging:', err);
+    }
+  })();
 }
 
 module.exports = {

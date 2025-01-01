@@ -79,18 +79,10 @@ const setupRoutes = (broadcast) => {
   
       if (newChargingState) {
         startCharging(id, broadcast);
+        startTemperatureService(id, broadcast);
       } else {
         stopCharging(id);
-  
-        const resetConsumptionQuery = `
-          UPDATE dashboard
-          SET power_consumption = 0.00
-          WHERE id = $1
-          RETURNING *
-        `;
-        const { rows: resetRows } = await db.query(resetConsumptionQuery, [id]);
-        
-        broadcast(resetRows[0]);
+        startTemperatureService(id, broadcast);
       }
   
       res.json(updateRows[0]);

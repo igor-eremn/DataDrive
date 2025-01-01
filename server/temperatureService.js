@@ -40,24 +40,24 @@ async function startTemperatureService(id, broadcast) {
       battery_temperature = parseFloat(battery_temperature || 25);
       battery_percentage = parseFloat(battery_percentage);
 
-      // Determine target temperature
-      let targetTemp = SPEED_TEMP_MAP[motor_speed] || 25;
+      let targetTemp;
+      if (is_charging) {
+        targetTemp = Math.random() < 0.5 ? 31 : 33;
+      } else if (motor_speed > 0) {
+        const baseTemp = SPEED_TEMP_MAP[motor_speed] || 25;
+        const maxTemp = baseTemp + 2;
+        targetTemp = Math.floor(Math.random() * (maxTemp - baseTemp + 1)) + baseTemp;
+      } else {
+        targetTemp = 25;
+      } 
 
-      // If battery is 0% or charging, cool down to 25
-      if (battery_percentage <= 0 || is_charging) {
-        targetTemp = 25; // Cool down
-        motor_speed = 0; // Ensure motor is off
-      }
-
-      // Adjust the battery temperature
       let newTemp = battery_temperature;
       if (newTemp < targetTemp) {
-        newTemp += 1; // Gradual heating
+        newTemp += 1;
       } else if (newTemp > targetTemp) {
-        newTemp -= 1; // Gradual cooling
+        newTemp -= 1;
       }
 
-      // If temperature stabilizes at 25°C, stop the service (optional)
       if (
         newTemp === 25 &&
         motor_speed === 0 &&
@@ -78,7 +78,6 @@ async function startTemperatureService(id, broadcast) {
         return;
       }
 
-      // Update the database with the new temperature
       const updateQuery = `
         UPDATE dashboard
         SET battery_temperature = $1
@@ -93,7 +92,7 @@ async function startTemperatureService(id, broadcast) {
       clearInterval(intervalId);
       delete temperatureJobs[id];
     }
-  }, 1000); // Adjust interval as needed
+  }, 1500);
 
   temperatureJobs[id] = intervalId;
 }
