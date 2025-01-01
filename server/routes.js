@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('./db');
 
 const { startCharging, stopCharging } = require('./chargingService');
+const { startSpeedService, stopSpeedService } = require('./speedService');
 
 const setupRoutes = (broadcast) => {
   router.get('/dashboard', async (req, res) => {
@@ -107,10 +108,15 @@ const setupRoutes = (broadcast) => {
         return res.status(400).json({ error: 'Invalid speed. Must be between 0 and 4.' });
       }
   
-      const motorRpm = speed * 200;
-  
-      const queryText = 'UPDATE dashboard SET motor_speed=$1, motor_rpm=$2 WHERE id=$3 RETURNING *';
-      const { rows } = await db.query(queryText, [speed, motorRpm, id]);
+      const baseRpm = speed * 200;
+      const queryText = `
+        UPDATE dashboard
+        SET motor_speed = $1,
+            motor_rpm = $2
+        WHERE id = $3
+        RETURNING *
+      `;
+      const { rows } = await db.query(queryText, [speed, baseRpm, id]);
   
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Record not found' });
@@ -122,6 +128,13 @@ const setupRoutes = (broadcast) => {
       });
   
       broadcast(rows[0]);
+  
+      if (speed === 0) {
+        stopSpeedService(id);
+      } else {
+        startSpeedService(id, broadcast);
+      }
+  
       res.json(rows[0]);
     } catch (err) {
       console.error('Error updating motor speed and RPM:', err);
