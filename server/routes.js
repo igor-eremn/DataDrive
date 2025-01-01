@@ -28,7 +28,7 @@ const setupRoutes = (broadcast) => {
         return res.status(404).json({ error: 'Record not found' });
       }
 
-      console.log('🔋 Battery Percentage Updated:', rows[0]);
+      console.log('🔋 Battery Percentage Updated:', rows[0].battery_percentage);
       broadcast(rows[0]);
 
       res.json(rows[0]);

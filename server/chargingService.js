@@ -1,3 +1,5 @@
+// chargingService.js
+
 const db = require('./db');
 
 const chargingJobs = {};
@@ -12,7 +14,7 @@ async function startCharging(id, broadcast) {
       const selectQuery = `
         SELECT battery_percentage, is_charging, power_consumption
         FROM dashboard
-        WHERE id=$1
+        WHERE id = $1
       `;
       const { rows } = await db.query(selectQuery, [id]);
       if (rows.length === 0) {
@@ -31,29 +33,29 @@ async function startCharging(id, broadcast) {
 
         if (battery_percentage >= 100) {
           await db.query(
-            'UPDATE dashboard SET battery_percentage=100.0, is_charging=false, power_consumption=0.00 WHERE id=$1',
+            'UPDATE dashboard SET battery_percentage = 100.0, is_charging = false, power_consumption = 0.00 WHERE id = $1',
             [id]
           );
-          const { rows: updatedRows } = await db.query('SELECT * FROM dashboard WHERE id=$1', [id]);
+          const { rows: updatedRows } = await db.query('SELECT * FROM dashboard WHERE id = $1', [id]);
           broadcast(updatedRows[0]);
         } else {
-          await db.query('UPDATE dashboard SET power_consumption=0.00 WHERE id=$1', [id]);
-          const { rows: updatedRows } = await db.query('SELECT * FROM dashboard WHERE id=$1', [id]);
+          await db.query('UPDATE dashboard SET power_consumption = 0.00 WHERE id = $1', [id]);
+          const { rows: updatedRows } = await db.query('SELECT * FROM dashboard WHERE id = $1', [id]);
           broadcast(updatedRows[0]);
         }
         return;
       }
 
-      const newBattery = battery_percentage + 1;
+      const newBattery = battery_percentage + 0.9;
       let newPowerConsumption = power_consumption;
 
       if (newPowerConsumption === 0) {
         newPowerConsumption = -1;
       }
-      else if (newPowerConsumption < 900) {
-        newPowerConsumption -= 75;
-        if (newPowerConsumption > 900) {
-          newPowerConsumption = 900;
+      else if (newPowerConsumption > -900) {
+        newPowerConsumption -= 900;
+        if (newPowerConsumption < -900) {
+          newPowerConsumption = -900;
         }
       }
       else {
@@ -62,23 +64,22 @@ async function startCharging(id, broadcast) {
         newPowerConsumption = Math.floor(
           Math.random() * (maxRand - minRand + 1) + minRand
         );
-        if (newPowerConsumption < -1000) {
-          newPowerConsumption = -1000;
-        }
       }
 
-      // Write changes back to DB
+      if (newPowerConsumption < -999.99) {
+        newPowerConsumption = -999.99;
+      } else if (newPowerConsumption > 999.99) {
+        newPowerConsumption = 999.99;
+      }
+
       const updateQuery = `
         UPDATE dashboard
-        SET battery_percentage=$1, power_consumption=$2
-        WHERE id=$3
+        SET battery_percentage = $1,
+            power_consumption = $2
+        WHERE id = $3
         RETURNING *
       `;
-      const { rows: updated } = await db.query(updateQuery, [
-        newBattery,
-        newPowerConsumption,
-        id,
-      ]);
+      const { rows: updated } = await db.query(updateQuery, [newBattery, newPowerConsumption, id]);
 
       console.log('🔌 Power Consumption:', newPowerConsumption);
       broadcast(updated[0]);
@@ -88,7 +89,7 @@ async function startCharging(id, broadcast) {
       clearInterval(intervalId);
       delete chargingJobs[id];
     }
-  }, 750);
+  }, 1000);
 
   chargingJobs[id] = intervalId;
 }
