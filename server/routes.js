@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('./db');
 
+const { startCharging, stopCharging } = require('./chargingService');
+
 const setupRoutes = (broadcast) => {
   router.get('/dashboard', async (req, res) => {
     try {
@@ -19,8 +21,7 @@ const setupRoutes = (broadcast) => {
       const { id } = req.params;
       const { percentage } = req.body;
 
-      const queryText =
-        'UPDATE dashboard SET battery_percentage=$1 WHERE id=$2 RETURNING *';
+      const queryText = 'UPDATE dashboard SET battery_percentage=$1 WHERE id=$2 RETURNING *';
       const { rows } = await db.query(queryText, [percentage, id]);
 
       if (rows.length === 0) {
@@ -43,7 +44,6 @@ const setupRoutes = (broadcast) => {
 
       const getStateQuery = 'SELECT is_charging FROM dashboard WHERE id=$1';
       const { rows: stateRows } = await db.query(getStateQuery, [id]);
-
       if (stateRows.length === 0) {
         return res.status(404).json({ error: 'Record not found' });
       }
@@ -51,20 +51,20 @@ const setupRoutes = (broadcast) => {
       const currentChargingState = stateRows[0].is_charging;
       const newChargingState = !currentChargingState;
 
-      const updateQuery =
-        'UPDATE dashboard SET is_charging=$1 WHERE id=$2 RETURNING *';
-      const { rows: updateRows } = await db.query(updateQuery, [
-        newChargingState,
-        id,
-      ]);
-
+      const updateQuery = 'UPDATE dashboard SET is_charging=$1 WHERE id=$2 RETURNING *';
+      const { rows: updateRows } = await db.query(updateQuery, [newChargingState, id]);
       if (updateRows.length === 0) {
         return res.status(404).json({ error: 'Failed to update the record' });
       }
 
       console.log('🔋 Charging State Updated:', newChargingState);
-
       broadcast(updateRows[0]);
+
+      if (newChargingState) {
+        startCharging(id, broadcast);
+      } else {
+        stopCharging(id);
+      }
 
       res.json(updateRows[0]);
     } catch (err) {
@@ -77,22 +77,20 @@ const setupRoutes = (broadcast) => {
     try {
       const { id } = req.params;
       const { speed } = req.body;
-  
+
       if (speed < 0 || speed > 4) {
         return res.status(400).json({ error: 'Invalid speed. Must be between 0 and 4.' });
       }
-  
+
       const queryText = 'UPDATE dashboard SET motor_speed=$1 WHERE id=$2 RETURNING *';
       const { rows } = await db.query(queryText, [speed, id]);
-  
+
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Record not found' });
       }
-  
+
       console.log('📊 Motor Speed Updated:', rows[0].motor_speed);
-  
       broadcast(rows[0]);
-  
       res.json(rows[0]);
     } catch (err) {
       console.error('Error updating motor speed:', err);
@@ -103,25 +101,25 @@ const setupRoutes = (broadcast) => {
   router.get('/statuses/:id', async (req, res) => {
     try {
       const { id } = req.params;
-  
-      const queryText = 'SELECT parking_brake, check_engine, motor_speed, battery_percentage FROM dashboard WHERE id = $1';
+      const queryText = `
+        SELECT parking_brake, check_engine, motor_speed, battery_percentage
+        FROM dashboard
+        WHERE id = $1
+      `;
       const { rows } = await db.query(queryText, [id]);
-  
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Record not found' });
       }
-  
+
       const { parking_brake, check_engine, motor_speed, battery_percentage } = rows[0];
-  
       const statuses = {
         parkingBrake: parking_brake,
         checkEngine: check_engine,
         motorActive: motor_speed === 4,
         lowBattery: parseFloat(battery_percentage) < 20,
       };
-  
+
       console.log('Statuses Received');
-  
       res.json(statuses);
     } catch (err) {
       console.error('Error fetching statuses:', err);

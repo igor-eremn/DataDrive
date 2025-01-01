@@ -101,6 +101,7 @@ const Dashboard: React.FC = () => {
                 batteryPercentage: dashboardData.battery_percentage,
                 batteryTemperature: dashboardData.battery_temperature,
                 motorRpm: dashboardData.motor_rpm,
+                is_charging: isCharging,
               }}
             />
           )}

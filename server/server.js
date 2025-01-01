@@ -16,16 +16,9 @@ const wss = new Server({ server });
 
 wss.on('connection', (ws) => {
   console.log('ws connection established');
-
   ws.send(JSON.stringify({ message: 'ws connected!' }));
-
-  ws.on('message', (message) => {
-    console.log('Received:', message);
-  });
-
-  ws.on('close', () => {
-    console.log('ws connection closed');
-  });
+  ws.on('message', (msg) => console.log('Received:', msg));
+  ws.on('close', () => console.log('ws connection closed'));
 });
 
 const broadcast = (data) => {

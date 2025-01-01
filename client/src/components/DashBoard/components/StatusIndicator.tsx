@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GaugeIcon, Battery, Thermometer, Power } from 'lucide-react';
+import { BatteryLow, BatteryMedium, BatteryFull } from 'lucide-react';
 
 interface StatusIndicatorProps {
   data: {
@@ -7,15 +8,33 @@ interface StatusIndicatorProps {
     batteryPercentage: string;
     batteryTemperature: string;
     motorRpm: number;
+    is_charging: boolean;
   };
 }
 
 export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ data }) => {
+  const [chargingIcon, setChargingIcon] = useState<JSX.Element>(<BatteryLow />);
+
+  useEffect(() => {
+    if (data.is_charging) {
+      let currentIndex = 0;
+      const icons = [<BatteryLow />, <BatteryMedium />, <BatteryFull />];
+      const interval = setInterval(() => {
+        currentIndex = (currentIndex + 1) % icons.length;
+        setChargingIcon(icons[currentIndex]);
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, [data.is_charging]);
+
   const items = [
     { icon: <GaugeIcon />, value: data.gearRatio },
-    { icon: <Battery />, value: `${data.batteryPercentage}%` },
+    {
+      icon: data.is_charging ? chargingIcon : <Battery />,
+      value: `${data.batteryPercentage}%`,
+    },
     { icon: <Thermometer />, value: `${data.batteryTemperature}ºC` },
-    { icon: <Power />, value: `${data.motorRpm} RPM`},
+    { icon: <Power />, value: `${data.motorRpm} RPM` },
   ];
 
   return (
