@@ -11,7 +11,6 @@ const Dashboard: React.FC = () => {
   const [motorSpeed, setMotorSpeed] = useState(0);
   const [motorRpm, setMotorRpm] = useState(0);
   const [powerConsumption, setPowerConsumption] = useState(0);
-
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [statuses, setStatuses] = useState<any>(null);
 
@@ -24,13 +23,11 @@ const Dashboard: React.FC = () => {
         setDashboardData(row);
         setIsCharging(row.is_charging);
         setMotorSpeed(row.motor_speed);
-
         setMotorRpm(parseInt(row.motor_rpm, 10));
         setPowerConsumption(parseInt(row.power_consumption, 10));
 
         const statusData = await fetchStatuses();
         setStatuses(statusData);
-
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
@@ -67,7 +64,6 @@ const Dashboard: React.FC = () => {
 
         const statusData = await fetchStatuses();
         setStatuses(statusData);
-
       } catch (error) {
         console.error('Error parsing ws message:', error);
       }
@@ -96,14 +92,7 @@ const Dashboard: React.FC = () => {
     try {
       const updatedData = await updateMotorSpeed(speed);
       setMotorSpeed(updatedData.motor_speed);
-
-      if (updatedData.motor_rpm !== undefined) {
-        setMotorRpm(parseInt(updatedData.motor_rpm, 10));
-      }
-      if (updatedData.power_consumption !== undefined) {
-        setPowerConsumption(parseInt(updatedData.power_consumption, 10));
-      }
-
+      setMotorRpm(updatedData.motor_rpm);
     } catch (error) {
       console.error('Error updating motor speed:', error);
     }
@@ -137,7 +126,7 @@ const Dashboard: React.FC = () => {
             <MotorSpeedSetting
               speed={motorSpeed}
               onSpeedChange={handleSpeedChange}
-              disabled={isCharging} 
+              disabled={isCharging}
             />
           )}
         </div>

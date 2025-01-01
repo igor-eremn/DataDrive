@@ -7,13 +7,13 @@ interface GaugesProps {
 }
 
 export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) => {
-  const [check, setCheck] = useState(false);
+  const [checkKW, setCheckKW] = useState(false);
 
   useEffect(() => {
     if(powerConsumption == 0){
-      setCheck(false);
+      setCheckKW(false);
     } else if(powerConsumption < 0){
-      setCheck(true);
+      setCheckKW(true);
     }
   }, [powerConsumption]);
 
@@ -55,7 +55,7 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
           pointer={{
             elastic: false,
             animationDelay: 1.5,
-            animate: check,
+            animate: checkKW,
           }}
           minValue={-1000}
           maxValue={1000}
@@ -87,10 +87,10 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
           }}
           arc={{
             subArcs: [
-              { limit: 200, color: '#5BE12C' },
-              { limit: 400, color: '#F5CD19' },
-              { limit: 600, color: '#EA4228' },
-              { limit: 800, color: '#5BE12C' },
+              { limit: 250, color: '#5BE12C' },
+              { limit: 450, color: '#F5CD19' },
+              { limit: 650, color: '#EA4228' },
+              { limit: 900, color: '#8B0000' },
             ],
             padding: 0.02,
             width: 0.02,
@@ -100,7 +100,7 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
             animationDelay: 0,
           }}
           minValue={0}
-          maxValue={800}
+          maxValue={900}
         />
       </div>
     </div>

@@ -102,23 +102,29 @@ const setupRoutes = (broadcast) => {
     try {
       const { id } = req.params;
       const { speed } = req.body;
-
+  
       if (speed < 0 || speed > 4) {
         return res.status(400).json({ error: 'Invalid speed. Must be between 0 and 4.' });
       }
-
-      const queryText = 'UPDATE dashboard SET motor_speed=$1 WHERE id=$2 RETURNING *';
-      const { rows } = await db.query(queryText, [speed, id]);
-
+  
+      const motorRpm = speed * 200;
+  
+      const queryText = 'UPDATE dashboard SET motor_speed=$1, motor_rpm=$2 WHERE id=$3 RETURNING *';
+      const { rows } = await db.query(queryText, [speed, motorRpm, id]);
+  
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Record not found' });
       }
-
-      console.log('📊 Motor Speed Updated:', rows[0].motor_speed);
+  
+      console.log('📊 Motor Speed and RPM Updated:', {
+        motor_speed: rows[0].motor_speed,
+        motor_rpm: rows[0].motor_rpm,
+      });
+  
       broadcast(rows[0]);
       res.json(rows[0]);
     } catch (err) {
-      console.error('Error updating motor speed:', err);
+      console.error('Error updating motor speed and RPM:', err);
       res.status(500).json({ error: 'Server error' });
     }
   });
