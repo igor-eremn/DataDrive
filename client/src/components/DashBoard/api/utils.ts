@@ -37,3 +37,25 @@ export const toggleChargingState = async (): Promise<any> => {
     throw error;
   }
 };
+
+export const updateMotorSpeed = async (speed: number): Promise<any> => {
+  try {
+    const response = await fetch(`http://localhost:3000/api/update-speed/1`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ speed }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update motor speed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error updating motor speed:', error);
+    throw error;
+  }
+};

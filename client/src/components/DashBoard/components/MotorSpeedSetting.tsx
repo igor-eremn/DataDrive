@@ -1,9 +1,22 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
-export const MotorSpeedSetting: React.FC = () => {
-  const [speed, setSpeed] = useState(0);
+interface MotorSpeedSettingProps {
+  speed: number; // Received speed from the parent component
+  onSpeedChange: (speed: number) => void; // Function to update speed
+}
+
+export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
+  speed,
+  onSpeedChange,
+}) => {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [currentSpeed, setCurrentSpeed] = useState(speed); // Local state for slider position
+
+  // Update slider position whenever the `speed` prop changes
+  useEffect(() => {
+    setCurrentSpeed(speed);
+  }, [speed]);
 
   const handleDrag = (event: React.MouseEvent | React.TouchEvent) => {
     if (!trackRef.current) return;
@@ -18,16 +31,18 @@ export const MotorSpeedSetting: React.FC = () => {
     );
 
     const newSpeed = Math.round((position / track.width) * 4);
-    setSpeed(newSpeed);
-  };
 
-  useEffect(() => {
-    console.log("SPEED UPDATE:", speed);
-  }, [speed]);
+    if (newSpeed !== currentSpeed) {
+      setCurrentSpeed(newSpeed);
+      onSpeedChange(newSpeed); // Call the callback to update the parent
+    }
+  };
 
   const handleMouseDown = () => setDragging(true);
 
-  const handleMouseUp = () => setDragging(false);
+  const handleMouseUp = () => {
+    setDragging(false);
+  };
 
   const handleMouseMove = (event: React.MouseEvent | React.TouchEvent) => {
     if (dragging) handleDrag(event);
@@ -49,15 +64,17 @@ export const MotorSpeedSetting: React.FC = () => {
           ref={trackRef}
           className="relative w-full h-2 bg-gray-700 rounded-full"
         >
+          {/* Background slider fill */}
           <div
             className="absolute top-0 left-0 h-full bg-gray-500 rounded-full"
-            style={{ width: `${(speed / 4) * 100}%` }}
+            style={{ width: `${(currentSpeed / 4) * 100}%` }} // Update slider fill based on `currentSpeed`
           />
 
+          {/* Slider handle */}
           <div
             className="absolute top-1/2 -translate-y-1/2 w-4 h-4 lg:w-6 lg:h-6 rounded-full border-2 border-white bg-black cursor-pointer transition-all duration-200 ease-in-out"
             style={{
-              left: `${(speed / 4) * 100}%`,
+              left: `${(currentSpeed / 4) * 100}%`, // Update handle position based on `currentSpeed`
               transform: `translate(-50%, -50%)`,
             }}
             onMouseDown={handleMouseDown}
@@ -65,10 +82,11 @@ export const MotorSpeedSetting: React.FC = () => {
           />
         </div>
 
+        {/* Speed labels */}
         <div className="flex justify-between w-full text-white text-sm">
           <span
             className={`w-10 text-center ${
-              speed === 0 ? "text-white font-bold" : "text-gray-400"
+              currentSpeed === 0 ? "text-white font-bold" : "text-gray-400"
             }`}
           >
             OFF
@@ -77,7 +95,7 @@ export const MotorSpeedSetting: React.FC = () => {
             <span
               key={num}
               className={`w-10 text-center ${
-                speed === num ? "text-white font-bold" : "text-gray-400"
+                currentSpeed === num ? "text-white font-bold" : "text-gray-400"
               }`}
             >
               {num}
