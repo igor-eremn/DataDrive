@@ -27,19 +27,30 @@ async function startSpeedService(id, broadcast) {
       battery_percentage = parseFloat(battery_percentage);
 
       if (motor_speed === 0 || battery_percentage <= 0 || is_charging) {
-        clearInterval(intervalId);
-        delete speedJobs[id];
-
-        if (battery_percentage < 0) {
+        
+        if (battery_percentage <= 0) {
           battery_percentage = 0;
+
+          // Force motor off
+          motor_speed = 0;
+          motor_rpm = 0;
+          
           await db.query(
-            'UPDATE dashboard SET battery_percentage = 0.00 WHERE id=$1',
+            `
+              UPDATE dashboard
+              SET battery_percentage = 0.00,
+                  motor_speed = 0,
+                  motor_rpm = 0
+              WHERE id=$1
+            `,
             [id]
           );
           const { rows: updatedRows } = await db.query('SELECT * FROM dashboard WHERE id=$1', [id]);
           broadcast(updatedRows[0]);
         }
 
+        clearInterval(intervalId);
+        delete speedJobs[id];
         return;
       }
 
@@ -49,7 +60,6 @@ async function startSpeedService(id, broadcast) {
       if (newRpm < 0) newRpm = 0;
 
       let drainRate = 0.5 * motor_speed; 
-
       if (drainRate < 0) drainRate = 0;
       
       let newBattery = battery_percentage - drainRate;
@@ -57,7 +67,8 @@ async function startSpeedService(id, broadcast) {
 
       const updateQuery = `
         UPDATE dashboard
-        SET motor_rpm = $1, battery_percentage = $2
+        SET motor_rpm = $1,
+            battery_percentage = $2
         WHERE id = $3
         RETURNING *
       `;
