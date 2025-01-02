@@ -1,7 +1,7 @@
 const db = require('./db');
-
 const temperatureJobs = {};
 
+// Base temperature for each motor speed
 const SPEED_TEMP_MAP = {
   0: 25,
   1: 30,
@@ -17,6 +17,7 @@ async function startTemperatureService(id, broadcast) {
 
   const intervalId = setInterval(async () => {
     try {
+      // Fetch the latest dashboard record
       const selectQuery = `
         SELECT motor_speed, battery_temperature, battery_percentage, is_charging
         FROM dashboard
@@ -36,18 +37,22 @@ async function startTemperatureService(id, broadcast) {
         is_charging,
       } = rows[0];
 
+      // Parse values from the database
       motor_speed = parseInt(motor_speed, 10);
       battery_temperature = parseFloat(battery_temperature || 25);
       battery_percentage = parseFloat(battery_percentage);
 
       let targetTemp;
       if (is_charging) {
+        // Determine Target Temperature When Charging
         targetTemp = Math.random() < 0.5 ? 31 : 33;
       } else if (motor_speed > 0) {
+        // Determine Target Temperature When Not Charging
         const baseTemp = SPEED_TEMP_MAP[motor_speed] || 25;
         const maxTemp = baseTemp + 2;
         targetTemp = Math.floor(Math.random() * (maxTemp - baseTemp + 1)) + baseTemp;
       } else {
+        // Default Target Temperature
         targetTemp = 25;
       } 
 
@@ -58,12 +63,14 @@ async function startTemperatureService(id, broadcast) {
         newTemp -= 1;
       }
 
+      // Check if the temperature should be reset
       if (
         newTemp === 25 &&
         motor_speed === 0 &&
         battery_percentage > 0 &&
         !is_charging
       ) {
+        // Reset the battery temperature
         await db.query(`
           UPDATE dashboard
           SET battery_temperature = 25.0
@@ -78,6 +85,7 @@ async function startTemperatureService(id, broadcast) {
         return;
       }
 
+      // Update the temperature in the database
       const updateQuery = `
         UPDATE dashboard
         SET battery_temperature = $1
@@ -92,7 +100,7 @@ async function startTemperatureService(id, broadcast) {
       clearInterval(intervalId);
       delete temperatureJobs[id];
     }
-  }, 1500);
+  }, 1500); // Interval for temperature updates
 
   temperatureJobs[id] = intervalId;
 }

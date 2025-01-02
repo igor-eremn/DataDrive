@@ -16,17 +16,21 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ data }) => {
   const [chargingIcon, setChargingIcon] = useState<JSX.Element>(<BatteryLow />);
 
   useEffect(() => {
+    // If the device is charging, cycle through different battery icons
     if (data.is_charging) {
       let currentIndex = 0;
-      const icons = [<BatteryLow />, <BatteryMedium />, <BatteryFull />];
+      const icons = [<BatteryLow key="low" />, <BatteryMedium key="medium" />, <BatteryFull key="full" />];
+      
       const interval = setInterval(() => {
         currentIndex = (currentIndex + 1) % icons.length;
         setChargingIcon(icons[currentIndex]);
       }, 500);
+      
       return () => clearInterval(interval);
     }
   }, [data.is_charging]);
 
+  // Array of status items to display in the grid
   const items = [
     { icon: <GaugeIcon />, value: data.gearRatio },
     {
@@ -38,6 +42,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ data }) => {
   ];
 
   return (
+    // Grid container for status indicators
     <div className="grid grid-cols-4 lg:grid-cols-4 gap-px bg-gray-800 flex-1">
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-2 px-6 py-14 bg-gray-900">

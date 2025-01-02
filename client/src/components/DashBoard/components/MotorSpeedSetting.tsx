@@ -14,6 +14,8 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
   disabledPower = false,
 }) => {
   const trackRef = useRef<HTMLDivElement | null>(null);
+  
+  // State to manage dragging status and current speed
   const [dragging, setDragging] = useState(false);
   const [currentSpeed, setCurrentSpeed] = useState(speed);
 
@@ -21,18 +23,22 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
     setCurrentSpeed(speed);
   }, [speed]);
 
+  // Handle dragging to update motor speed
   const handleDrag = (event: React.MouseEvent | React.TouchEvent) => {
+    // Prevent dragging if charging or power is disabled, or if trackRef is not set
     if (disabledCharging || disabledPower || !trackRef.current) return;
 
     const track = trackRef.current.getBoundingClientRect();
     const clientX =
       "touches" in event ? event.touches[0].clientX : event.clientX;
 
+    // Calculate position within the track bounds
     const position = Math.min(
       Math.max(clientX - track.left, 0),
       track.width
     );
 
+    // Determine new speed based on position
     const newSpeed = Math.round((position / track.width) * 4);
     if (newSpeed !== currentSpeed) {
       setCurrentSpeed(newSpeed);
@@ -50,6 +56,7 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
     setDragging(false);
   };
 
+  // Handle mouse or touch movement during dragging
   const handleMouseMove = (event: React.MouseEvent | React.TouchEvent) => {
     if (dragging && !disabledCharging && !disabledPower) {
       handleDrag(event);
@@ -69,6 +76,7 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
       </div>
 
       <div className="flex flex-col items-center gap-4">
+        {/* Slider Track */}
         <div
           ref={trackRef}
           className={`relative w-full h-2 bg-gray-700 rounded-full ${
@@ -92,6 +100,7 @@ export const MotorSpeedSetting: React.FC<MotorSpeedSettingProps> = ({
           />
         </div>
 
+        {/* Speed Labels */}
         <div className="flex justify-between w-full text-white text-sm">
           <span
             className={`w-10 text-center ${

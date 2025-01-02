@@ -1,6 +1,6 @@
 const db = require('./db');
-
 const speedJobs = {};
+
 
 async function startSpeedService(id, broadcast) {
   if (speedJobs[id]) {
@@ -9,6 +9,7 @@ async function startSpeedService(id, broadcast) {
 
   const intervalId = setInterval(async () => {
     try {
+      // Fetch the current metrics for the dashboard record
       const selectQuery = `
         SELECT motor_speed, motor_rpm, battery_percentage, is_charging, power_consumption
         FROM dashboard
@@ -34,8 +35,10 @@ async function startSpeedService(id, broadcast) {
       battery_percentage = parseFloat(battery_percentage);
       power_consumption = parseFloat(power_consumption || 0);
 
+      // Check if the motor speed is 0, battery percentage is 0, or the vehicle is charging
       if (motor_speed === 0 || battery_percentage <= 0 || is_charging) {
         if (battery_percentage <= 0) {
+          // Battery Percentage Reached 0: Reset All Metrics
           battery_percentage = 0;
           motor_speed = 0;
           motor_rpm = 0;
@@ -54,6 +57,7 @@ async function startSpeedService(id, broadcast) {
           broadcast(updatedRows[0]);
         } 
         else if (motor_speed === 0 && battery_percentage > 0) {
+          // Motor Speed Set to 0: Reset Power Consumption
           await db.query(`
             UPDATE dashboard
             SET power_consumption = 0.00
@@ -69,6 +73,7 @@ async function startSpeedService(id, broadcast) {
         return;
       }
 
+      // Update motor RPM, battery percentage, and power consumption
       const baseRpm = motor_speed * 200;
       const rpmFluctuation = Math.floor(Math.random() * 51) - 25;
       let newRpm = baseRpm + rpmFluctuation;
@@ -90,7 +95,9 @@ async function startSpeedService(id, broadcast) {
         newPower = basePower + powerFluctuation;
         if (newPower < 0) newPower = 0;
       }
+      if (newPower < 0) newPower = 0;
 
+      // Update the database with the new metrics
       const updateQuery = `
         UPDATE dashboard
         SET motor_rpm = $1,
@@ -106,6 +113,7 @@ async function startSpeedService(id, broadcast) {
         id,
       ]);
 
+      console.log('📈 Motor RPM:', newRpm, '🔋 Battery:', newBattery, '⚡ Power:', newPower);
       broadcast(updatedRows[0]);
 
     } catch (err) {
@@ -113,7 +121,7 @@ async function startSpeedService(id, broadcast) {
       clearInterval(intervalId);
       delete speedJobs[id];
     }
-  }, 1000);
+  }, 1000); // Interval for Speed Service
 
   speedJobs[id] = intervalId;
 }
@@ -124,12 +132,13 @@ function stopSpeedService(id) {
     delete speedJobs[id];
   }
 
+  // Reset power consumption to 0
   db.query(`
     UPDATE dashboard
     SET power_consumption = 0.00
     WHERE id = $1
   `, [id]).then(() => {
-    console.log(`Power consumption reset to 0 for ID ${id}`);
+    console.log(`⚡ Power consumption reset to 0 for ID ${id}`);
   }).catch((err) => {
     console.error(`Error resetting power consumption for ID ${id}:`, err);
   });

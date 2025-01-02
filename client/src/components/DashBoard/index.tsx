@@ -7,6 +7,7 @@ import { StatusBar } from './components/StatusBar';
 import { fetchDashboardData, toggleChargingState, updateMotorSpeed, fetchStatuses } from './api/utils';
 
 const Dashboard: React.FC = () => {
+  // State variables to manage dashboard data and statuses
   const [isCharging, setIsCharging] = useState(false);
   const [hasPower, setHasPower] = useState(false);
   const [motorSpeed, setMotorSpeed] = useState(0);
@@ -16,6 +17,7 @@ const Dashboard: React.FC = () => {
   const [statuses, setStatuses] = useState<any>(null);
 
   useEffect(() => {
+    // Function to fetch initial dashboard data and statuses
     const fetchData = async () => {
       try {
         const data = await fetchDashboardData();
@@ -38,7 +40,9 @@ const Dashboard: React.FC = () => {
 
     fetchData();
 
+    // Setup WebSocket connection for real-time updates
     const socket = new WebSocket('ws://localhost:3000');
+
     socket.onmessage = async (event) => {
       try {
         const updatedData = JSON.parse(event.data);
@@ -49,6 +53,7 @@ const Dashboard: React.FC = () => {
           ...updatedData,
         }));
 
+        // Update specific state variables based on received data
         if (updatedData.hasOwnProperty('is_charging')) {
           setIsCharging(updatedData.is_charging);
           setHasPower(updatedData.battery_percentage > 0);
@@ -66,6 +71,7 @@ const Dashboard: React.FC = () => {
           setPowerConsumption(parseInt(updatedData.power_consumption, 10));
         }
 
+        // Refresh statuses after receiving updates
         const statusData = await fetchStatuses();
         setStatuses(statusData);
       } catch (error) {
@@ -77,12 +83,14 @@ const Dashboard: React.FC = () => {
       console.error('ws error:', error);
     };
 
+    // Cleanup WebSocket connection on component unmount
     return () => {
       socket.close();
       console.log('ws connection closed');
     };
   }, []);
 
+  // Handler to toggle charging state
   const handleToggleCharging = async () => {
     try {
       const updatedData = await toggleChargingState();
@@ -92,6 +100,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Handler to change motor speed
   const handleSpeedChange = async (speed: number) => {
     try {
       const updatedData = await updateMotorSpeed(speed);
@@ -104,13 +113,16 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen w-screen flex flex-col bg-gray-900">
+      {/* Top status icons */}
       <div className="w-full border-b border-gray-800">
         {statuses && <TopStatusIcons statuses={statuses} />}
       </div>
 
+      {/* Gauges for motor RPM and power consumption */}
       <Gauges motorRpm={motorRpm} powerConsumption={powerConsumption} />
 
       <div className="flex flex-col lg:flex-row gap-8 border-t-8 border-gray-800">
+        {/* Status Indicator showing various metrics */}
         <div className="flex-1 lg:w-1/2 border-b border-b-8 border-gray-800 lg:border-b-0">
           {dashboardData && (
             <StatusIndicator
@@ -125,6 +137,7 @@ const Dashboard: React.FC = () => {
           )}
         </div>
 
+        {/* Motor speed settings control */}
         <div className="flex-1 lg:w-1/2">
           {dashboardData && (
             <MotorSpeedSetting
@@ -137,6 +150,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Status bar with charging controls */}
       <StatusBar isCharging={isCharging} toggleCharging={handleToggleCharging} />
     </div>
   );

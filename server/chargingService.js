@@ -1,7 +1,4 @@
-// chargingService.js
-
 const db = require('./db');
-
 const chargingJobs = {};
 
 async function startCharging(id, broadcast) {
@@ -9,8 +6,10 @@ async function startCharging(id, broadcast) {
     clearInterval(chargingJobs[id]);
   }
 
+  // Initialize Charging Interval to Update Battery and Power Consumption
   const intervalId = setInterval(async () => {
     try {
+      // Fetch Current State from Database
       const selectQuery = `
         SELECT battery_percentage, is_charging, power_consumption
         FROM dashboard
@@ -27,11 +26,13 @@ async function startCharging(id, broadcast) {
       battery_percentage = parseFloat(battery_percentage);
       power_consumption = parseFloat(power_consumption);
 
+      // Determine If Charging Should Stop
       if (!is_charging || battery_percentage >= 100) {
         clearInterval(intervalId);
         delete chargingJobs[id];
 
         if (battery_percentage >= 100) {
+          // Handle Battery Fully Charged
           await db.query(
             'UPDATE dashboard SET battery_percentage = 100.0, is_charging = false, power_consumption = 0.00 WHERE id = $1',
             [id]
@@ -39,6 +40,7 @@ async function startCharging(id, broadcast) {
           const { rows: updatedRows } = await db.query('SELECT * FROM dashboard WHERE id = $1', [id]);
           broadcast(updatedRows[0]);
         } else {
+          // Reset Power Consumption When Charging Stops
           await db.query('UPDATE dashboard SET power_consumption = 0.00 WHERE id = $1', [id]);
           const { rows: updatedRows } = await db.query('SELECT * FROM dashboard WHERE id = $1', [id]);
           broadcast(updatedRows[0]);
@@ -46,6 +48,7 @@ async function startCharging(id, broadcast) {
         return;
       }
 
+      // Update Battery Percentage and Power Consumption
       const newBattery = battery_percentage + 0.9;
       let newPowerConsumption = power_consumption;
 
@@ -66,12 +69,14 @@ async function startCharging(id, broadcast) {
         );
       }
 
+      // Cap Power Consumption Values
       if (newPowerConsumption < -999.99) {
         newPowerConsumption = -999.99;
       } else if (newPowerConsumption > 999.99) {
         newPowerConsumption = 999.99;
       }
 
+      // Update Database
       const updateQuery = `
         UPDATE dashboard
         SET battery_percentage = $1,
@@ -89,7 +94,7 @@ async function startCharging(id, broadcast) {
       clearInterval(intervalId);
       delete chargingJobs[id];
     }
-  }, 1000);
+  }, 1000); // Interval for Charging Process
 
   chargingJobs[id] = intervalId;
 }
@@ -100,6 +105,7 @@ function stopCharging(id, broadcast) {
     delete chargingJobs[id];
   }
 
+  // Reset Power Consumption
   (async () => {
     try {
       const resetConsumptionQuery = `

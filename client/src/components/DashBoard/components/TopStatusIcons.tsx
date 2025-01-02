@@ -11,6 +11,7 @@ interface TopStatusIconsProps {
 }
 
 export const TopStatusIcons: React.FC<TopStatusIconsProps> = ({ statuses }) => {
+  // Array of icons with their active states based on props
   const icons = [
     { icon: <CircleParking />, active: statuses.parkingBrake },
     { icon: <TriangleAlert />, active: statuses.checkEngine },
@@ -19,6 +20,7 @@ export const TopStatusIcons: React.FC<TopStatusIconsProps> = ({ statuses }) => {
   ];
 
   return (
+    // Container for the status icons with background styling
     <div className="flex gap-px bg-gray-800 w-fit">
       {icons.map((item, index) => (
         <div 

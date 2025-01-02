@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import GaugeComponent from 'react-gauge-component';
 
 interface GaugesProps {
@@ -10,17 +10,16 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
   const [checkKW, setCheckKW] = useState(false);
 
   useEffect(() => {
-    if(powerConsumption == 0){
+    if (powerConsumption === 0) {
       setCheckKW(false);
-    } else if(powerConsumption < 0){
-      setCheckKW(true);
-    } else if(powerConsumption > 0){
+    } else {
       setCheckKW(true);
     }
   }, [powerConsumption]);
 
   return (
     <div className="flex-1 flex justify-center items-center gap-[5%] px-4">
+      {/* Power Consumption Gauge */}
       <div className="relative w-[45%] max-w-[400px] min-w-[150px]">
         <GaugeComponent
           value={powerConsumption}
@@ -47,9 +46,9 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
           }}
           arc={{
             subArcs: [
-              { limit: -333.33, color: '#5BE12C' },
-              { limit: 333.33, color: '#F5CD19' },
-              { limit: 1000, color: '#EA4228' },
+              { limit: -333.33, color: '#5BE12C' }, // Green zone
+              { limit: 333.33, color: '#F5CD19' },  // Yellow zone
+              { limit: 1000, color: '#EA4228' },    // Red zone
             ],
             padding: 0.02,
             width: 0.02,
@@ -64,6 +63,7 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
         />
       </div>
 
+      {/* Motor RPM Gauge */}
       <div className="relative w-[45%] max-w-[400px] min-w-[150px]">
         <GaugeComponent
           value={motorRpm}
@@ -89,10 +89,10 @@ export const Gauges: React.FC<GaugesProps> = ({ motorRpm, powerConsumption }) =>
           }}
           arc={{
             subArcs: [
-              { limit: 250, color: '#5BE12C' },
-              { limit: 450, color: '#F5CD19' },
-              { limit: 650, color: '#EA4228' },
-              { limit: 900, color: '#8B0000' },
+              { limit: 250, color: '#5BE12C' },   // Green zone
+              { limit: 450, color: '#F5CD19' },   // Yellow zone
+              { limit: 650, color: '#EA4228' },   // Orange zone
+              { limit: 900, color: '#8B0000' },   // Dark Red zone
             ],
             padding: 0.02,
             width: 0.02,

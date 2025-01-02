@@ -7,6 +7,8 @@ const { startSpeedService, stopSpeedService } = require('./speedService');
 const { startTemperatureService, stopTemperatureService } = require('./temperatureService');
 
 const setupRoutes = (broadcast) => {
+  
+  // Fetch all records from the dashboard table 
   router.get('/dashboard', async (req, res) => {
     try {
       const { rows } = await db.query('SELECT * FROM dashboard');
@@ -18,6 +20,7 @@ const setupRoutes = (broadcast) => {
     }
   });
 
+  // Update the battery percentage for a dashboard record 
   router.post('/set-battery/:id', async (req, res) => {
     try {
       const { id } = req.params;
@@ -40,6 +43,7 @@ const setupRoutes = (broadcast) => {
     }
   });
 
+  // Toggle the charging state for a dashboard record
   router.post('/toggle-charging/:id', async (req, res) => {
     try {
       const { id } = req.params;
@@ -92,6 +96,7 @@ const setupRoutes = (broadcast) => {
     }
   });
 
+  // Update the motor speed and RPM for a dashboard record
   router.post('/update-speed/:id', async (req, res) => {
     try {
       const { id } = req.params;
@@ -139,6 +144,7 @@ const setupRoutes = (broadcast) => {
     }
   });
 
+  // Retrieve the status indicators for a dashboard record
   router.get('/statuses/:id', async (req, res) => {
     try {
       const { id } = req.params;
