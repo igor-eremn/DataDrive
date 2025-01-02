@@ -40,9 +40,29 @@ const Dashboard: React.FC = () => {
 
     fetchData();
 
-    // Setup WebSocket connection for real-time updates
-    const socket = new WebSocket(`wss://${new URL(import.meta.env.VITE_APP_API_BASE_URL).host}`);
-    
+    const apiBaseUrl = import.meta.env.VITE_APP_API_BASE_URL;
+
+    if (!apiBaseUrl) {
+      console.error('VITE_APP_API_BASE_URL is not defined');
+      return;
+    }
+
+    let socketUrl: string;
+
+    try {
+      const parsedUrl = new URL(apiBaseUrl);
+      socketUrl = `wss://${parsedUrl.host}/ws`;
+    } catch (error) {
+      console.error('Invalid VITE_APP_API_BASE_URL:', apiBaseUrl, error);
+      return;
+    }
+
+    const socket = new WebSocket(socketUrl);
+
+    socket.onopen = () => {
+      console.log('WebSocket connection opened');
+    };
+
     socket.onmessage = async (event) => {
       try {
         const updatedData = JSON.parse(event.data);
@@ -80,13 +100,16 @@ const Dashboard: React.FC = () => {
     };
 
     socket.onerror = (error) => {
-      console.error('ws error:', error);
+      console.error('WebSocket error:', error);
     };
 
-    // Cleanup WebSocket connection on component unmount
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
     return () => {
       socket.close();
-      console.log('ws connection closed');
+      console.log('WebSocket connection closed');
     };
   }, []);
 

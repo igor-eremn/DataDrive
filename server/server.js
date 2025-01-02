@@ -8,7 +8,7 @@ const { Server } = require('ws');
 const app = express();
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: process.env.CORS_ORIGIN || '*', // Ensure this is set to your frontend URL
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 };
@@ -18,9 +18,12 @@ app.use(express.json());
 // Environment Variables
 const PORT = process.env.PORT || 3000;
 const API_PREFIX = '/api';
-const WS_PATH = '/ws';
+const WS_PATH = '/ws'; // Define your WebSocket path
 
+// Create HTTP Server
 const server = http.createServer(app);
+
+// Initialize WebSocket Server with Path
 const wss = new Server({ server, path: WS_PATH });
 
 // Handle WebSocket Connections
@@ -31,6 +34,7 @@ wss.on('connection', (ws) => {
 
   ws.on('message', (msg) => {
     console.log('Received:', msg);
+    // Handle incoming messages if needed
   });
 
   ws.on('close', () => console.log('WebSocket connection closed'));
@@ -56,5 +60,5 @@ app.get('/', (req, res) => {
 // Start the Server
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`WebSocket server running at ws://${server.address().address}:${PORT}${WS_PATH}`);
+  console.log(`WebSocket server running at ws://localhost:${PORT}${WS_PATH}`);
 });
