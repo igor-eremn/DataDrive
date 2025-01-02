@@ -143,7 +143,7 @@ const setupRoutes = (broadcast) => {
     try {
       const { id } = req.params;
       const queryText = `
-        SELECT parking_brake, check_engine, motor_speed, battery_percentage
+        SELECT parking_brake, check_engine, motor_rpm, battery_percentage
         FROM dashboard
         WHERE id = $1
       `;
@@ -152,11 +152,11 @@ const setupRoutes = (broadcast) => {
         return res.status(404).json({ error: 'Record not found' });
       }
 
-      const { parking_brake, check_engine, motor_speed, battery_percentage } = rows[0];
+      const { parking_brake, check_engine, motor_rpm, battery_percentage } = rows[0];
       const statuses = {
         parkingBrake: parking_brake,
         checkEngine: check_engine,
-        motorActive: motor_speed === 4,
+        motorActive: motor_rpm > 700,
         lowBattery: parseFloat(battery_percentage) < 20,
       };
 
