@@ -1,6 +1,8 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const fetchDashboardData = async (): Promise<any[]> => {
   try {
-    const response = await fetch('http://localhost:3000/api/dashboard', {
+    const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -20,7 +22,7 @@ export const fetchDashboardData = async (): Promise<any[]> => {
 
 export const toggleChargingState = async (): Promise<any> => {
   try {
-    const response = await fetch('http://localhost:3000/api/toggle-charging/1', {
+    const response = await fetch(`${API_BASE_URL}/api/toggle-charging/1`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -40,7 +42,7 @@ export const toggleChargingState = async (): Promise<any> => {
 
 export const updateMotorSpeed = async (speed: number): Promise<any> => {
   try {
-    const response = await fetch(`http://localhost:3000/api/update-speed/1`, {
+    const response = await fetch(`${API_BASE_URL}/api/update-speed/1`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +64,7 @@ export const updateMotorSpeed = async (speed: number): Promise<any> => {
 
 export const fetchStatuses = async (): Promise<any> => {
   try {
-    const response = await fetch(`http://localhost:3000/api/statuses/1`, {
+    const response = await fetch(`${API_BASE_URL}/api/statuses/1`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

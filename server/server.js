@@ -7,25 +7,37 @@ const { Server } = require('ws');
 
 const app = express();
 
-// Enable Cross-Origin Resource Sharing (CORS)
-app.use(cors());
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
+// Environment Variables
 const PORT = process.env.PORT || 3000;
+const API_PREFIX = '/api';
+
+// Create HTTP Server
 const server = http.createServer(app);
 
-const wss = new Server({ server });
+const wss = new Server({ server});
 
-// Handle new WebSocket connections
+// Handle WebSocket Connections
 wss.on('connection', (ws) => {
   console.log('WebSocket connection established');
 
   ws.send(JSON.stringify({ message: 'WebSocket connected!' }));
-  ws.on('message', (msg) => console.log('Received:', msg));
+
+  ws.on('message', (msg) => {
+    console.log('Received:', msg);
+  });
+
   ws.on('close', () => console.log('WebSocket connection closed'));
 });
 
-// Broadcasts data to all connected WebSocket clients.
+// Broadcast Function for Real-Time Updates
 const broadcast = (data) => {
   wss.clients.forEach((client) => {
     if (client.readyState === client.OPEN) {
@@ -34,15 +46,16 @@ const broadcast = (data) => {
   });
 };
 
-// Import and set up API routes, passing the broadcast function for real-time updates
+// Import and Set Up API Routes, Passing the Broadcast Function
 const setupRoutes = require('./routes');
-app.use('/api', setupRoutes(broadcast));
+app.use(API_PREFIX, setupRoutes(broadcast));
 
 app.get('/', (req, res) => {
   res.send('Vehicle Dashboard API!');
 });
 
-// Start the server and listen on the specified port
+// Start the Server
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`WebSocket server running at ws://localhost:${PORT}${WS_PATH}`);
 });
