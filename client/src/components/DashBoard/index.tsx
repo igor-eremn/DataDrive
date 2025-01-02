@@ -41,8 +41,8 @@ const Dashboard: React.FC = () => {
     fetchData();
 
     // Setup WebSocket connection for real-time updates
-    const socket = new WebSocket(`ws://${import.meta.env.VITE_APP_API_BASE_URL}`);
-
+    const socket = new WebSocket(`wss://${new URL(import.meta.env.VITE_APP_API_BASE_URL).host}`);
+    
     socket.onmessage = async (event) => {
       try {
         const updatedData = JSON.parse(event.data);

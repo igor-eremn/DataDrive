@@ -18,11 +18,10 @@ app.use(express.json());
 // Environment Variables
 const PORT = process.env.PORT || 3000;
 const API_PREFIX = '/api';
+const WS_PATH = '/ws';
 
-// Create HTTP Server
 const server = http.createServer(app);
-
-const wss = new Server({ server});
+const wss = new Server({ server, path: WS_PATH });
 
 // Handle WebSocket Connections
 wss.on('connection', (ws) => {
@@ -57,5 +56,5 @@ app.get('/', (req, res) => {
 // Start the Server
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`WebSocket server running at ws://localhost:${PORT}${WS_PATH}`);
+  console.log(`WebSocket server running at ws://${server.address().address}:${PORT}${WS_PATH}`);
 });
