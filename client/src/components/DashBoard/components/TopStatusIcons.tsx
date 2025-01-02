@@ -7,28 +7,33 @@ interface TopStatusIconsProps {
     checkEngine: boolean;
     motorActive: boolean;
     lowBattery: boolean;
-  };
+  } | null;
+  loading: boolean;
 }
 
-export const TopStatusIcons: React.FC<TopStatusIconsProps> = ({ statuses }) => {
-  // Array of icons with their active states based on props
+export const TopStatusIcons: React.FC<TopStatusIconsProps> = ({ statuses, loading }) => {
   const icons = [
-    { icon: <CircleParking />, active: statuses.parkingBrake },
-    { icon: <TriangleAlert />, active: statuses.checkEngine },
-    { icon: <ShieldAlert />, active: statuses.motorActive },
-    { icon: <BatteryWarning />, active: statuses.lowBattery },
+    { icon: <CircleParking />, active: statuses?.parkingBrake },
+    { icon: <TriangleAlert />, active: statuses?.checkEngine },
+    { icon: <ShieldAlert />, active: statuses?.motorActive },
+    { icon: <BatteryWarning />, active: statuses?.lowBattery },
   ];
 
   return (
-    // Container for the status icons with background styling
     <div className="flex gap-px bg-gray-800 w-fit">
       {icons.map((item, index) => (
-        <div 
+        <div
           key={index}
           className="w-16 h-16 bg-gray-900 flex items-center justify-center"
         >
-          {React.cloneElement(item.icon, { 
-            className: `w-8 h-8 ${item.active ? 'text-red-500' : 'text-gray-800'}`,
+          {React.cloneElement(item.icon, {
+            className: `w-8 h-8 ${
+              loading
+                ? 'text-gray-800'
+                : item.active
+                ? 'text-red-500'
+                : 'text-gray-800'
+            } transition-colors duration-500`,
           })}
         </div>
       ))}

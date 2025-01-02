@@ -15,6 +15,7 @@ const Dashboard: React.FC = () => {
   const [powerConsumption, setPowerConsumption] = useState(0);
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [statuses, setStatuses] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Function to fetch initial dashboard data and statuses
@@ -33,6 +34,7 @@ const Dashboard: React.FC = () => {
 
         const statusData = await fetchStatuses();
         setStatuses(statusData);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       }
@@ -138,7 +140,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen w-screen flex flex-col bg-gray-900">
       {/* Top status icons */}
       <div className="w-full border-b border-gray-800">
-        {statuses && <TopStatusIcons statuses={statuses} />}
+        <TopStatusIcons statuses={statuses} loading={loading} />
       </div>
 
       {/* Gauges for motor RPM and power consumption */}
