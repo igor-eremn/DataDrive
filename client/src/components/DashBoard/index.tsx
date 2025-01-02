@@ -136,6 +136,16 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const defaultDashboardData = {
+    gear_ratio: 'N/A',
+    battery_percentage: 0,
+    battery_temperature: 'N/A',
+    motor_rpm: 0,
+    is_charging: false,
+  };
+
+  const defaultMotorSpeed = 0;
+
   return (
     <div className="min-h-screen w-screen flex flex-col bg-gray-900">
       {/* Top status icons */}
@@ -147,31 +157,35 @@ const Dashboard: React.FC = () => {
       <Gauges motorRpm={motorRpm} powerConsumption={powerConsumption} />
 
       <div className="flex flex-col lg:flex-row gap-8 border-t-8 border-gray-800">
-        {/* Status Indicator showing various metrics */}
         <div className="flex-1 lg:w-1/2 border-b border-b-8 border-gray-800 lg:border-b-0">
-          {dashboardData && (
-            <StatusIndicator
-              data={{
-                gearRatio: dashboardData.gear_ratio,
-                batteryPercentage: dashboardData.battery_percentage,
-                batteryTemperature: dashboardData.battery_temperature,
-                motorRpm: dashboardData.motor_rpm,
-                is_charging: isCharging,
-              }}
-            />
-          )}
+        <StatusIndicator
+          data={
+            dashboardData
+              ? {
+                  gearRatio:          dashboardData.gear_ratio || "N/A",
+                  batteryPercentage:  `${dashboardData.battery_percentage || 0}`,
+                  batteryTemperature: `${dashboardData.battery_temperature || 0}`,
+                  motorRpm:           dashboardData.motor_rpm || 0,
+                  is_charging:        isCharging,
+                }
+              : {
+                  gearRatio:          defaultDashboardData.gear_ratio || "N/A",
+                  batteryPercentage:  `${defaultDashboardData.battery_percentage || 0}`,
+                  batteryTemperature: `${defaultDashboardData.battery_temperature || 0}`,
+                  motorRpm:           defaultDashboardData.motor_rpm || 0,
+                  is_charging:        defaultDashboardData.is_charging,
+                }
+          }
+        />
         </div>
 
-        {/* Motor speed settings control */}
         <div className="flex-1 lg:w-1/2">
-          {dashboardData && (
-            <MotorSpeedSetting
-              speed={motorSpeed}
-              onSpeedChange={handleSpeedChange}
-              disabledCharging={isCharging}
-              disabledPower={!hasPower}
-            />
-          )}
+          <MotorSpeedSetting
+            speed={dashboardData ? motorSpeed : defaultMotorSpeed}
+            onSpeedChange={handleSpeedChange}
+            disabledCharging={isCharging}
+            disabledPower={!hasPower}
+          />
         </div>
       </div>
 
